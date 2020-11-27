@@ -271,28 +271,10 @@ void loop() {
       case RIGHT: goRight(); break;
       default: break;
     }
-    Serial.print("|");
-    Serial.print(currentTime);
-    Serial.print("|");
-    Serial.print(previousTimeCrazyLook);
-    Serial.print("|");
-    Serial.print(currentTime - previousTimeCrazyLook);
-    Serial.print("|");
-    Serial.print(crazyLookDelay);
-    Serial.print("|");
     if (currentTime - previousTimeCrazyLook > crazyLookDelay){
       getCrazyLook();
       previousTimeCrazyLook = millis();
     }
-    Serial.print("|");
-    Serial.print(currentTime);
-    Serial.print("|");
-    Serial.print(previousTimeCrazyMove);
-    Serial.print("|");
-    Serial.print(currentTime - previousTimeCrazyMove);
-    Serial.print("|");
-    Serial.print(crazyMoveDelay);
-    Serial.print("|");
     if (currentTime - previousTimeCrazyMove > crazyMoveDelay){
       getCrazyMove();
       previousTimeCrazyMove = millis();
