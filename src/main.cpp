@@ -1,19 +1,20 @@
 #include <Arduino.h>
 
 //Pin numbers definition
-const int motorEnableLeft = 9;
-const int motorForwardLeft = 7;
-const int motorBackLeft = 8;
-const int motorEnableRight = 11;
-const int motorForwardRight = 12;
-const int motorBackRight = 10;
+  //Ultrasound
 const int trigPinFront = 3;
 const int echoPinFront = 2;
+  //IR
 const int irPin = A0;
-
-//Variables for the Motors
-const int leftMotorSpeed = 255; //best at 255
-const int rightMotorSpeed = 255;//best at 255
+  //SERVO
+const int servo_PIN = 4;
+  //Motor Pin
+const int motorForwardLeft = 7;
+const int motorBackLeft = 8;
+const int motorEnableLeft = 9;
+const int motorBackRight = 10;
+const int motorEnableRight = 11;
+const int motorForwardRight = 12;
 
 unsigned long delayTime = 150;
 unsigned long moveTime = 700;
@@ -28,15 +29,21 @@ int distanceLeft;
 const int minFrontDistance = 30;
 const int stuckDistance = 10;
 
-//controle
-enum Direction {FRONT, LEFT, RIGHT, BACK};
-Direction directn;
+
 boolean exit_stuck = false;
+
+//Variables for the Motors
+const int leftMotorSpeed = 255; //best at 255
+const int rightMotorSpeed = 255; //best at 255
+
+//controle
+enum Direction {FRONT, LEFT, RIGHT, BACK, STOP};
+Direction directn;
+Direction prev_directn;
 
 //SERVO
 #include <Servo.h>
 Servo myservo;
-const int servo_PIN = 4;
 int right_position = 0;
 int front_position = 90;
 int left_position = 180;
@@ -57,8 +64,12 @@ unsigned long crazyMoveDelay;
 unsigned long previousTimeCrazyMove = millis();
 unsigned long previousTimeCrazyLook = millis();
 
+//Methods Motor Control
 void stopCar () {
-  Serial.print("|stop");
+  if (prev_directn != directn){
+    Serial.print("|stop");
+    prev_directn = directn;
+  }
   digitalWrite(motorForwardLeft, LOW);
   digitalWrite(motorBackLeft, LOW);
   digitalWrite(motorForwardRight, LOW);
@@ -110,6 +121,7 @@ void goRight () {
   analogWrite(motorEnableLeft, leftMotorSpeed);
   analogWrite(motorEnableRight, rightMotorSpeed);
 }
+
 int sensorRead () {
   //Read front sensor value
   digitalWrite(trigPinFront, LOW);
@@ -184,6 +196,7 @@ void chooseDirection(){
     directn = FRONT;
     delayTime = 0;
   }
+  prev_directn = directn;
 }
 void getCrazyLook(){
   //look in a direction
@@ -221,14 +234,16 @@ void setup() {
   lookLeft();
   delay(200);
   lookFront();
-  Serial.println("Setup K");
+  Serial.println("Setup OK");
 }
 void loop() {
   currentTime = millis();
   if (irrecv.decode(&results)) {
     irrecv.resume();
-    if (results.value == FORW)
+    if (results.value == FORW){
       onoff = 1;
+      lookFront();
+    }
     else if (results.value == BACKW)
       onoff = 0;
     else if (results.value == ZERO)
@@ -261,6 +276,7 @@ void loop() {
   }
   else if (onoff == 0) {
     results.value = 0;
+    directn = STOP;
     stopCar();
   }
   else if (onoff == 2){
@@ -280,6 +296,4 @@ void loop() {
       previousTimeCrazyMove = millis();
     }
   }
-  Serial.println();
-  Serial.println();
 }
