@@ -11,10 +11,11 @@ const int servo_PIN = 4;
   //Motor Pin
 const int motorForwardLeft = 7;
 const int motorBackLeft = 8;
-const int motorEnableLeft = 9;
-const int motorBackRight = 10;
-const int motorEnableRight = 11;
 const int motorForwardRight = 12;
+const int motorBackRight = 10;
+const int motorEnableLeft = 9;
+const int motorEnableRight = 11;
+
 
 unsigned long delayTime = 150;
 unsigned long moveTime = 700;
