@@ -235,22 +235,6 @@ void setup() {
   lookLeft();
   delay(200);
   lookFront();
-  goForward();
-  delay(1000);
-  stopCar();
-  delay(1000);
-  goBack();
-  delay(1000);
-  stopCar();
-  delay(1000);
-  goLeft();
-  delay(1000);
-  stopCar();
-  delay(1000);
-  goRight();
-  delay(1000);
-  stopCar();
-  delay(1000);
   Serial.println("Setup OK");
 }
 void loop() {
