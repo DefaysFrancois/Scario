@@ -9,12 +9,12 @@ const int irPin = A0;
   //SERVO
 const int servo_PIN = 4;
   //Motor Pin
-const int motorForwardLeft = 7;
-const int motorBackLeft = 8;
-const int motorForwardRight = 12;
-const int motorBackRight = 10;
-const int motorEnableLeft = 9;
-const int motorEnableRight = 11;
+const int motorLeftIN1 = 8;
+const int motorLeftIN2 = 9;
+const int motorRightIN3 = 10;
+const int motorRightIN4 = 11;
+const int motorEnableLeftEN12 = 12;
+const int motorEnableRightEN34 = 13;
 
 
 unsigned long delayTime = 150;
@@ -71,56 +71,56 @@ void stopCar () {
     Serial.print("|stop");
     prev_directn = directn;
   }
-  digitalWrite(motorForwardLeft, LOW);
-  digitalWrite(motorBackLeft, LOW);
-  digitalWrite(motorForwardRight, LOW);
-  digitalWrite(motorBackRight, LOW);
-  analogWrite(motorEnableLeft, 0);
-  analogWrite(motorEnableRight, 0);
+  digitalWrite(motorLeftIN1, LOW);
+  digitalWrite(motorLeftIN2, LOW);
+  digitalWrite(motorRightIN3, LOW);
+  digitalWrite(motorRightIN4, LOW);
+  analogWrite(motorEnableLeftEN12, 0);
+  analogWrite(motorEnableRightEN34, 0);
 }
 void setLeftForward(){
-  digitalWrite(motorForwardLeft, HIGH);
-  digitalWrite(motorBackLeft, LOW);
+  digitalWrite(motorLeftIN1, HIGH);
+  digitalWrite(motorLeftIN2, LOW);
 }
 void setLeftBackward(){
-  digitalWrite(motorForwardLeft, LOW);
-  digitalWrite(motorBackLeft, HIGH);
+  digitalWrite(motorLeftIN1, LOW);
+  digitalWrite(motorLeftIN2, HIGH);
 }
 void setRightForward(){
-  digitalWrite(motorForwardRight, HIGH);
-  digitalWrite(motorBackRight, LOW);
+  digitalWrite(motorRightIN3, LOW);
+  digitalWrite(motorRightIN4, HIGH);
 }
 void setRightBackward(){
-  digitalWrite(motorForwardRight, LOW);
-  digitalWrite(motorBackRight, HIGH);
+  digitalWrite(motorRightIN3, HIGH);
+  digitalWrite(motorRightIN4, LOW);
 }
 void goBack () {
   Serial.print("|back");
   setLeftBackward();
   setRightBackward();
-  analogWrite(motorEnableLeft, leftMotorSpeed);
-  analogWrite(motorEnableRight, rightMotorSpeed);
+  analogWrite(motorEnableLeftEN12, leftMotorSpeed);
+  analogWrite(motorEnableRightEN34, rightMotorSpeed);
 }
 void goForward () {
   Serial.print("|go forward");
   setRightForward();
   setLeftForward();
-  analogWrite(motorEnableLeft, leftMotorSpeed);
-  analogWrite(motorEnableRight, rightMotorSpeed);
+  analogWrite(motorEnableLeftEN12, leftMotorSpeed);
+  analogWrite(motorEnableRightEN34, rightMotorSpeed);
 }
 void goLeft () {
   Serial.print("|go left");
   setLeftBackward();
   setRightForward();
-  analogWrite(motorEnableLeft, leftMotorSpeed);
-  analogWrite(motorEnableRight, rightMotorSpeed);
+  analogWrite(motorEnableLeftEN12, leftMotorSpeed);
+  analogWrite(motorEnableRightEN34, rightMotorSpeed);
 }
 void goRight () {
   Serial.print("|go right");
   setLeftForward();
   setRightBackward();
-  analogWrite(motorEnableLeft, leftMotorSpeed);
-  analogWrite(motorEnableRight, rightMotorSpeed);
+  analogWrite(motorEnableLeftEN12, leftMotorSpeed);
+  analogWrite(motorEnableRightEN34, rightMotorSpeed);
 }
 
 int sensorRead () {
@@ -218,12 +218,12 @@ void getCrazyMove(){
   crazyMoveDelay = random(100,1000);
 }
 void setup() {
-  pinMode(motorEnableLeft, OUTPUT);
-  pinMode(motorForwardLeft, OUTPUT);
-  pinMode(motorBackLeft, OUTPUT);
-  pinMode(motorEnableRight, OUTPUT);
-  pinMode(motorForwardRight, OUTPUT);
-  pinMode(motorBackRight, OUTPUT);
+  pinMode(motorEnableLeftEN12, OUTPUT);
+  pinMode(motorLeftIN1, OUTPUT);
+  pinMode(motorLeftIN2, OUTPUT);
+  pinMode(motorEnableRightEN34, OUTPUT);
+  pinMode(motorRightIN3, OUTPUT);
+  pinMode(motorRightIN4, OUTPUT);
   pinMode(trigPinFront, OUTPUT);
   pinMode(echoPinFront, INPUT);
   irrecv.enableIRIn();
@@ -235,6 +235,22 @@ void setup() {
   lookLeft();
   delay(200);
   lookFront();
+  goForward();
+  delay(1000);
+  stopCar();
+  delay(1000);
+  goBack();
+  delay(1000);
+  stopCar();
+  delay(1000);
+  goLeft();
+  delay(1000);
+  stopCar();
+  delay(1000);
+  goRight();
+  delay(1000);
+  stopCar();
+  delay(1000);
   Serial.println("Setup OK");
 }
 void loop() {
