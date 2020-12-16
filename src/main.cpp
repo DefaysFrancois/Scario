@@ -18,7 +18,6 @@ const int motorEnableRightEN34 = 13;
 
 
 unsigned long delayTime = 150;
-unsigned long moveTime = 700;
 unsigned long currentTime = millis();
 unsigned long previousTime = millis();
 
@@ -27,15 +26,15 @@ long durationFront;
 int distanceFront;
 int distanceRight;
 int distanceLeft;
-const int minFrontDistance = 30;
+const int minFrontDistance = 40;
 const int stuckDistance = 10;
 
 
 boolean exit_stuck = false;
 
 //Variables for the Motors
-const int leftMotorSpeed = 255; //best at 255
-const int rightMotorSpeed = 255; //best at 255
+const int leftMotorSpeed = 100; //best at 255
+const int rightMotorSpeed = 110; //best at 255
 
 //controle
 enum Direction {FRONT, LEFT, RIGHT, BACK, STOP};
@@ -71,10 +70,6 @@ void stopCar () {
     Serial.print("|stop");
     prev_directn = directn;
   }
-  digitalWrite(motorLeftIN1, LOW);
-  digitalWrite(motorLeftIN2, LOW);
-  digitalWrite(motorRightIN3, LOW);
-  digitalWrite(motorRightIN4, LOW);
   analogWrite(motorEnableLeftEN12, 0);
   analogWrite(motorEnableRightEN34, 0);
 }
@@ -169,20 +164,17 @@ void chooseDirection(){
       if (distanceLeft <= minFrontDistance && distanceRight <= minFrontDistance && distanceFront <= minFrontDistance){
         directn = BACK;
         exit_stuck = true;
-        moveTime = 700;
         delayTime = 700;
       }
       else
       {
         if (distanceRight >= distanceLeft){
           directn = RIGHT;
-          moveTime = 700;
           delayTime = 700;
         }
         else
         {
           directn = LEFT;
-          moveTime = 700;
           delayTime = 700;
         }
         exit_stuck = false;
