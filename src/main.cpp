@@ -2,17 +2,17 @@
 
 //Pin numbers definition
   //Ultrasound
-const int echoPinFront = 52;
-const int trigPinFront = 53;
-  //SERVO
-const int servo_PIN = 4;
-  //Motor Pin
-const int motorLeftIN1 = 8;
-const int motorLeftIN2 = 9;
-const int motorRightIN3 = 10;
-const int motorRightIN4 = 11;
-const int motorEnableLeftEN12 = 12;
-const int motorEnableRightEN34 = 13;
+const int echoPinFront = 4;
+const int trigPinFront = 5;
+//SERVO
+const int servo_PIN = 6;
+//Motor Pin
+const int motorLeftIN1 = 7;
+const int motorLeftIN2 = 8;
+const int motorRightIN3 = 9;
+const int motorRightIN4 = 10;
+const int motorEnableLeftEN12 = 11;
+const int motorEnableRightEN34 = 12;
 
 
 unsigned long delayTime = 150;
@@ -206,11 +206,15 @@ void setup() {
   Serial.begin(9600);
   delay(1000);
   myservo.attach(servo_PIN);
+  Serial.println("Setup");
   lookRight();
+  Serial.println("Looked Right");
   delay(200);
   lookLeft();
+  Serial.println("Looked Left");
   delay(200);
   lookFront();
+  Serial.println("Looking Front");
   Serial.println("Setup OK");
 }
 void loop() {
