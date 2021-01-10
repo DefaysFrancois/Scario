@@ -2,10 +2,8 @@
 
 //Pin numbers definition
   //Ultrasound
-const int trigPinFront = 3;
-const int echoPinFront = 2;
-  //IR
-const int irPin = A0;
+const int echoPinFront = 52;
+const int trigPinFront = 53;
   //SERVO
 const int servo_PIN = 4;
   //Motor Pin
@@ -26,20 +24,24 @@ long durationFront;
 int distanceFront;
 int distanceRight;
 int distanceLeft;
-const int minFrontDistance = 40;
+const int minDistance = 40;
+const int drivingDistance = 30;
 const int stuckDistance = 10;
-
 
 boolean exit_stuck = false;
 
 //Variables for the Motors
-const int leftMotorSpeed = 100; //best at 255
+const int leftMotorSpeed = 110; //best at 255
 const int rightMotorSpeed = 110; //best at 255
+const int leftMaxMotorSpeed = 255; //best at 255
+const int rightMaxMotorSpeed = 255; //best at 255
 
 //controle
 enum Direction {FRONT, LEFT, RIGHT, BACK, STOP};
 Direction directn;
 Direction prev_directn;
+int count_stuck = 0;
+int max_count_stuck = 3;
 
 //SERVO
 #include <Servo.h>
@@ -48,28 +50,16 @@ int right_position = 0;
 int front_position = 90;
 int left_position = 180;
 
-//Variables for IR Sensor
-#include <IRremote.h>
-IRrecv irrecv(irPin);
-decode_results results;
-int onoff = 0;
-//Control IR numbers
-const long FORW = 16761405;
-const long BACKW = 16720605;
-const long ZERO = 16738455;
-
-//Crazy
-unsigned long crazyLookDelay;
-unsigned long crazyMoveDelay;
-unsigned long previousTimeCrazyMove = millis();
-unsigned long previousTimeCrazyLook = millis();
-
 //Methods Motor Control
 void stopCar () {
   if (prev_directn != directn){
-    Serial.print("|stop");
+    //Serial.print("|stop");
     prev_directn = directn;
   }
+  digitalWrite(motorLeftIN1, LOW);
+  digitalWrite(motorLeftIN2, LOW);
+  digitalWrite(motorRightIN3, LOW);
+  digitalWrite(motorRightIN4, LOW);
   analogWrite(motorEnableLeftEN12, 0);
   analogWrite(motorEnableRightEN34, 0);
 }
@@ -90,32 +80,32 @@ void setRightBackward(){
   digitalWrite(motorRightIN4, LOW);
 }
 void goBack () {
-  Serial.print("|back");
+  //Serial.print("|back");
   setLeftBackward();
   setRightBackward();
   analogWrite(motorEnableLeftEN12, leftMotorSpeed);
   analogWrite(motorEnableRightEN34, rightMotorSpeed);
 }
 void goForward () {
-  Serial.print("|go forward");
+  //Serial.print("|go forward");
   setRightForward();
   setLeftForward();
   analogWrite(motorEnableLeftEN12, leftMotorSpeed);
   analogWrite(motorEnableRightEN34, rightMotorSpeed);
 }
 void goLeft () {
-  Serial.print("|go left");
+  //Serial.print("|go left");
   setLeftBackward();
   setRightForward();
-  analogWrite(motorEnableLeftEN12, leftMotorSpeed);
-  analogWrite(motorEnableRightEN34, rightMotorSpeed);
+  analogWrite(motorEnableLeftEN12, leftMaxMotorSpeed);
+  analogWrite(motorEnableRightEN34, rightMaxMotorSpeed);
 }
 void goRight () {
-  Serial.print("|go right");
+  //Serial.print("|go right");
   setLeftForward();
   setRightBackward();
-  analogWrite(motorEnableLeftEN12, leftMotorSpeed);
-  analogWrite(motorEnableRightEN34, rightMotorSpeed);
+  analogWrite(motorEnableLeftEN12, leftMaxMotorSpeed);
+  analogWrite(motorEnableRightEN34, rightMaxMotorSpeed);
 }
 
 int sensorRead () {
@@ -147,67 +137,62 @@ void lookFront(){
 void measureDistance(){
   lookRight();
   distanceRight = sensorRead();
-  Serial.print(distanceRight);
+  //Serial.print(distanceRight);
   lookLeft();
   distanceLeft = sensorRead();
-  Serial.print(distanceLeft);
+  //Serial.print(distanceLeft);
   lookFront();
   distanceFront = sensorRead();
-  Serial.print(distanceFront);
+  //Serial.print(distanceFront);
+  //Serial.println("");
 }
 void chooseDirection(){
   distanceFront = sensorRead();
-  if (distanceFront <= minFrontDistance) {
+  count_stuck++;
+  if (distanceFront <= minDistance || exit_stuck || count_stuck >= max_count_stuck){
     stopCar();
     measureDistance();
-    if (distanceFront <= minFrontDistance || exit_stuck){
-      if (distanceLeft <= minFrontDistance && distanceRight <= minFrontDistance && distanceFront <= minFrontDistance){
-        directn = BACK;
-        exit_stuck = true;
-        delayTime = 700;
+    if (distanceLeft <= minDistance && distanceRight <= minDistance && distanceFront <= minDistance){
+      directn = BACK;
+      exit_stuck = true;
+      delayTime = 700;
+    }
+    else
+    {
+      if (distanceFront > minDistance && count_stuck < max_count_stuck){
+        directn = FRONT;
+        delayTime = 0;
       }
-      else
-      {
+      else{
         if (distanceRight >= distanceLeft){
           directn = RIGHT;
-          delayTime = 700;
+          delayTime = 200;
         }
         else
         {
           directn = LEFT;
-          delayTime = 700;
+          delayTime = 200;
         }
-        exit_stuck = false;
       }
+      exit_stuck = false;
     }
-    else {
-      directn = FRONT;
-      delayTime = 0;
-    }
+    count_stuck = 0;
   }
-  else{
+  else
+  {
     directn = FRONT;
     delayTime = 0;
+    count_stuck = 0;
   }
   prev_directn = directn;
-}
-void getCrazyLook(){
-  //look in a direction
-  Serial.print("|Look");
-  long servoAngle = random(0,180);
-  myservo.write(servoAngle);
-  delay(15);
-  crazyLookDelay = random(100,1000);
-}
-void getCrazyMove(){
-  //turn in a direction
-  if (random(0,1000) < 500){
-    directn = LEFT;
-  }
-  else{
-    directn = RIGHT;
-  }
-  crazyMoveDelay = random(100,1000);
+/*   switch (directn)
+  {
+    case FRONT: break;
+    case BACK: Serial.println("Go Back"); break;
+    case LEFT: Serial.println("Go Left"); break;
+    case RIGHT: Serial.println("Go Right"); break;
+    default: break;
+  } */
 }
 void setup() {
   pinMode(motorEnableLeftEN12, OUTPUT);
@@ -218,7 +203,6 @@ void setup() {
   pinMode(motorRightIN4, OUTPUT);
   pinMode(trigPinFront, OUTPUT);
   pinMode(echoPinFront, INPUT);
-  irrecv.enableIRIn();
   Serial.begin(9600);
   delay(1000);
   myservo.attach(servo_PIN);
@@ -231,62 +215,17 @@ void setup() {
 }
 void loop() {
   currentTime = millis();
-  if (irrecv.decode(&results)) {
-    irrecv.resume();
-    if (results.value == FORW){
-      onoff = 1;
-      lookFront();
-    }
-    else if (results.value == BACKW)
-      onoff = 0;
-    else if (results.value == ZERO)
-      onoff = 2;
+  switch (directn)
+  {
+    case FRONT: goForward(); break;
+    case BACK: goBack(); break;
+    case LEFT: goLeft(); break;
+    case RIGHT: goRight(); break;
+    default: break;
   }
-  if (onoff == 1) {
-    results.value = 0;
-    switch (directn)
-    {
-      case FRONT: goForward(); break;
-      case BACK: goBack(); break;
-      case LEFT: goLeft(); break;
-      case RIGHT: goRight(); break;
-      default: break;
-    }
-    Serial.println();
-    Serial.print("Current : ");
-    Serial.print(currentTime);
-    Serial.print(" | Previous : ");
-    Serial.print(previousTime);
-    Serial.print(" | Difference : ");
-    Serial.print(currentTime - previousTime);
-    Serial.print(" | delayTime : ");
-    Serial.print(delayTime);
-    Serial.println();
-    if (currentTime - previousTime > delayTime){
-      chooseDirection();
-      previousTime = millis();
-    }
-  }
-  else if (onoff == 0) {
-    results.value = 0;
-    directn = STOP;
-    stopCar();
-  }
-  else if (onoff == 2){
-    results.value = 0;
-    switch (directn)
-    {
-      case LEFT: goLeft(); break;
-      case RIGHT: goRight(); break;
-      default: break;
-    }
-    if (currentTime - previousTimeCrazyLook > crazyLookDelay){
-      getCrazyLook();
-      previousTimeCrazyLook = millis();
-    }
-    if (currentTime - previousTimeCrazyMove > crazyMoveDelay){
-      getCrazyMove();
-      previousTimeCrazyMove = millis();
-    }
+
+  if (currentTime - previousTime > delayTime){
+    chooseDirection();
+    previousTime = millis();
   }
 }
